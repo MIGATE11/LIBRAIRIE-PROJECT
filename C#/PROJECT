@@ -1,0 +1,336 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+using namespace std;
+
+class Book{
+private :
+    string title;
+    string author;
+    int year;
+    bool borrowed = false;
+
+public :
+
+    virtual void display(){
+        cout << " Title : " << title << endl;
+        cout << " Author : " << author << endl;
+        cout << " Year : " << year << endl;
+        if (borrowed == false) {
+            cout << "Borrowed : Available " << endl;
+        } else {
+            cout << "Borrowed : Unavailable " << endl;
+        }
+    }
+
+    void borrow(){
+        if (borrowed == false) {
+            borrowed = true;
+            cout << "You have borrowed the book " << endl;
+            save();
+        } else {
+            cout << "The book has already been borrowed " << endl;
+        }
+    }
+
+    void getback(){
+        if (borrowed == true) {
+            borrowed = false;
+            cout << "You have returned the book " << endl;
+            save();
+        } else {
+            cout << "The book has not been borrowed yet " << endl;
+        }
+    }
+
+    virtual void save(){
+        ofstream manuscript(title + ".txt");
+        manuscript << "Title : " << title << endl;
+        manuscript << "Author : " << author << endl;
+        manuscript << "Year : " << year << endl;
+        if (borrowed == false) {
+            manuscript << "Borrowed : Available " << endl;
+        }else {
+            manuscript << "Borrowed : Unavailable " << endl;
+        }
+        manuscript.close();
+    }
+
+    virtual void saveToLibrary(ofstream& file){
+        file << "BOOK" << endl;
+        file << "Title : " << title << endl;
+        file << "Author : " << author << endl;
+        file << "Year : " << year << endl;
+        if (borrowed == false) {
+            file << "Borrowed : Available " << endl;
+        }else {
+            file << "Borrowed : Unavailable " << endl;
+        }
+    }
+
+    string getTitle() { return title; }
+    string getAuthor() { return author; }
+
+    Book(string t, string a, int y){
+        title = t;
+        author = a;
+        year = y;
+    }
+    
+    virtual ~Book() {}
+};
+
+class Ebook : public Book{
+private :
+    string title;
+    string author;
+    int year;
+    bool borrowed = false;
+    int sizeMB;
+
+public :
+    void download(){
+        cout << "Downloading..." << endl;
+    }
+
+    void display() override {
+        cout << " Title : " << title << endl;
+        cout << " Author : " << author << endl;
+        cout << " Year : " << year << endl;
+        if (borrowed == false) {
+            cout << "Borrowed : Available " << endl;
+        } else {
+            cout << "Borrowed : Unavailable " << endl;
+        }
+        cout << "Size : " << sizeMB << "MB" << endl;
+    }
+
+    void save() override {
+        ofstream manuscript(title + ".txt");
+        manuscript << "Title : " << title << endl;
+        manuscript << "Author : " << author << endl;
+        manuscript << "Year : " << year << endl;
+        manuscript << "Size : " << sizeMB << "MB" << endl;
+        if (borrowed == false) {
+            manuscript << "Borrowed : Available " << endl;
+        }else {
+            manuscript << "Borrowed : Unavailable " << endl;
+        }
+        manuscript.close();
+    }
+
+    void saveToLibrary(ofstream& file) override {
+        file << "EBOOK" << endl;
+        file << "Title : " << title << endl;
+        file << "Author : " << author << endl;
+        file << "Year : " << year << endl;
+        file << "Size : " << sizeMB << "MB" << endl;
+        if (borrowed == false) {
+            file << "Borrowed : Available " << endl;
+        }else {
+            file << "Borrowed : Unavailable " << endl;
+        }
+    }
+
+    Ebook(string t, string a, int y, int s) : Book(t, a, y) {
+        title = t;
+        author = a;
+        year = y;
+        sizeMB = s;
+    }
+
+    void borrow(){
+        if (borrowed == false) {
+            borrowed = true;
+            cout << "You have borrowed the ebook " << endl;
+            save();
+        } else {
+            cout << "The ebook has already been borrowed " << endl;
+        }
+    }
+
+    void getback(){
+        if (borrowed == true) {
+            borrowed = false;
+            cout << "You have returned the ebook " << endl;
+            save();
+        } else {
+            cout << "The ebook has not been borrowed yet " << endl;
+        }
+    }
+};
+
+class Library {
+private:
+    vector<Book*> books;
+
+public:
+    void addBook(Book* b) {
+        books.push_back(b);
+        cout << "Book added!" << endl;
+    }
+
+    void addEbook(Ebook* e) {
+        books.push_back(e);
+        cout << "Ebook added!" << endl;
+    }
+
+    void displayAll() {
+        if (books.size() == 0) {
+            cout << "Library is empty!" << endl;
+            return;
+        }
+
+        for (int i = 0; i < books.size(); i++) {
+            books[i]->display();
+        }
+    }
+
+    void searchByAuthor(string author) {
+        bool found = false;
+        for (int i = 0; i < books.size(); i++) {
+            if (books[i]->getAuthor() == author) {
+                books[i]->display();
+                found = true;
+            }
+        }
+
+        if (!found) {
+            cout << "No books found for " << author << endl;
+        }
+    }
+
+    void borrowBook(string title) {
+        bool found = false;
+        for (int i = 0; i < books.size(); i++) {
+            if (books[i]->getTitle() == title) {
+                books[i]->borrow();
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            cout << "Book not found!" << endl;
+        }
+    }
+
+    void returnBook(string title) {
+        bool found = false;
+        for (int i = 0; i < books.size(); i++) {
+            if (books[i]->getTitle() == title) {
+                books[i]->getback();
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            cout << "Book not found!" << endl;
+        }
+    }
+
+    void saveLibraryToFile(string filename) {
+        ofstream file(filename);
+        
+        if (!file.is_open()) {
+            cout << "Error opening file!" << endl;
+            return;
+        }
+
+        file << "- LIBRARY -" << endl;
+        file << "Total books: " << books.size() << endl;
+
+        for (int i = 0; i < books.size(); i++) {
+            books[i]->saveToLibrary(file);
+        }
+
+        file.close();
+        cout << "Library saved to " << filename << " successfully!" << endl;
+    }
+
+    ~Library() {
+        for (int i = 0; i < books.size(); i++) {
+            delete books[i];
+        }
+    }
+};
+
+int main() {
+    Library library;
+    int choice;
+    string title, author;
+    int year, size;
+
+    cout << "- LIBRARY MANAGEMENT SYSTEM -" << endl;
+
+    do {
+        cout << "\n- MENU -" << endl; cout << "1. Add a book" << endl; cout << "2. Add an e-book" << endl;
+        cout << "3. Display all books" << endl; cout << "4. Search for an author" << endl; cout << "5. Borrow a book" << endl;
+        cout << "6. Return a book" << endl; cout << "7. Quit the program" << endl; cout << "\nEnter your choice: ";
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+            case 1: {
+                cout << "\n- Add a Book -" << endl; cout << "Title: "; getline(cin, title);
+                cout << "Author: "; getline(cin, author);
+                cout << "Year: "; cin >> year;
+                cin.ignore();
+
+                Book* book = new Book(title, author, year);
+                library.addBook(book);
+                break;
+            }
+
+            case 2: {
+                cout << "\n- Add an E-Book -" << endl; cout << "Title: ";getline(cin, title);
+                cout << "Author: "; getline(cin, author); cout << "Year: "; cin >> year;
+                cout << "Size (MB): "; cin >> size;
+                cin.ignore();
+
+                Ebook* ebook = new Ebook(title, author, year, size);
+                library.addEbook(ebook);
+                break;
+            }
+
+            case 3: {
+                cout << "\n- All Books -" << endl;
+                library.displayAll();
+                break;
+            }
+
+            case 4: {
+                cout << "\n- Search by Author -" << endl; cout << "Author name: "; getline(cin, author);
+                library.searchByAuthor(author);
+                break;
+            }
+
+            case 5: {
+                cout << "\n- Borrow a Book -" << endl; cout << "Book title: "; getline(cin, title);
+                library.borrowBook(title);
+                break;
+            }
+
+            case 6: {
+                cout << "\n- Return a Book -" << endl; cout << "Book title: "; getline(cin, title);
+                library.returnBook(title);
+                break;
+            }
+
+            case 7: {
+                cout << "\nSaving of the library and exiting..." << endl;
+                library.saveLibraryToFile("library.txt");
+                cout << "Goodbye!" << endl;
+                break;
+            }
+
+            default:
+                cout << "Invalid choice! Please try again." << endl;
+        }
+
+    } while (choice != 7);
+
+    return 0;
+    system("PAUSE");
+}
